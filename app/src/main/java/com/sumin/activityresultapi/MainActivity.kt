@@ -1,5 +1,6 @@
 package com.sumin.activityresultapi
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
@@ -16,16 +17,36 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        initViews()
-        getUsernameButton.setOnClickListener {
-            UsernameActivity.newIntent(this).apply {
-                startActivity(this)
-            }
 
-            // TODO get username
+        initViews()
+
+        getUsernameButton.setOnClickListener {
+            UsernameActivity.newIntent(context = this).apply {
+                startActivityForResult(this, RC_USERNAME)
+            }
         }
+
         getImageButton.setOnClickListener {
-            // TODO get image
+            Intent(Intent.ACTION_PICK).apply {
+                type = "image/*"    // MINE types
+                startActivityForResult(this, RC_IMAGE)
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == RC_USERNAME && resultCode == RESULT_OK) {
+            val username = data?.getStringExtra(UsernameActivity.EXTRA_USERNAME) ?: ""
+
+            usernameTextView.text = username
+        }
+
+        if (requestCode == RC_IMAGE && resultCode == RESULT_OK) {
+            val uri = data?.data
+
+            imageFromGalleryImageView.setImageURI(uri)
         }
     }
 
@@ -34,5 +55,10 @@ class MainActivity : AppCompatActivity() {
         usernameTextView = findViewById(R.id.username_textview)
         getImageButton = findViewById(R.id.get_image_button)
         imageFromGalleryImageView = findViewById(R.id.image_from_gallery_imageview)
+    }
+
+    companion object {
+        private const val RC_USERNAME = 100
+        private const val  RC_IMAGE = 101
     }
 }
